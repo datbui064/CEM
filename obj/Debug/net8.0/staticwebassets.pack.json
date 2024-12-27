@@ -1,0 +1,229 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\CEM.bundle.scp.css",
+      "PackagePath": "staticwebassets\\CEM.bundle.scp.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\New\\css\\bootstrap.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\css\\font-awesome.min.css",
+      "PackagePath": "staticwebassets\\New\\css\\font-awesome.min.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\css\\responsive.css",
+      "PackagePath": "staticwebassets\\New\\css\\responsive.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\css\\style.css",
+      "PackagePath": "staticwebassets\\New\\css\\style.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\css\\style.css.map",
+      "PackagePath": "staticwebassets\\New\\css\\style.css.map"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\css\\style.scss",
+      "PackagePath": "staticwebassets\\New\\css\\style.scss"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\fonts\\fontawesome-webfont.ttf",
+      "PackagePath": "staticwebassets\\New\\fonts\\fontawesome-webfont.ttf"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\fonts\\fontawesome-webfont.woff",
+      "PackagePath": "staticwebassets\\New\\fonts\\fontawesome-webfont.woff"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\fonts\\fontawesome-webfont.woff2",
+      "PackagePath": "staticwebassets\\New\\fonts\\fontawesome-webfont.woff2"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\about-img.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\about-img.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\about-img.png",
+      "PackagePath": "staticwebassets\\New\\images\\about-img.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\client1.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\client1.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\client2.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\client2.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\favicon.png",
+      "PackagePath": "staticwebassets\\New\\images\\favicon.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\hero-bg.png",
+      "PackagePath": "staticwebassets\\New\\images\\hero-bg.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\next.png",
+      "PackagePath": "staticwebassets\\New\\images\\next.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\prev.png",
+      "PackagePath": "staticwebassets\\New\\images\\prev.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\s1.png",
+      "PackagePath": "staticwebassets\\New\\images\\s1.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\s2.png",
+      "PackagePath": "staticwebassets\\New\\images\\s2.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\s3.png",
+      "PackagePath": "staticwebassets\\New\\images\\s3.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\slider-bg.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\slider-bg.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\slider-img.png",
+      "PackagePath": "staticwebassets\\New\\images\\slider-img.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\team-1.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\team-1.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\team-2.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\team-2.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\team-3.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\team-3.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\team-4.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\team-4.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\track-bg.jpg",
+      "PackagePath": "staticwebassets\\New\\images\\track-bg.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\w1.png",
+      "PackagePath": "staticwebassets\\New\\images\\w1.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\w2.png",
+      "PackagePath": "staticwebassets\\New\\images\\w2.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\w3.png",
+      "PackagePath": "staticwebassets\\New\\images\\w3.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\images\\w4.png",
+      "PackagePath": "staticwebassets\\New\\images\\w4.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\New\\js\\bootstrap.js"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\js\\custom.js",
+      "PackagePath": "staticwebassets\\New\\js\\custom.js"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\New\\js\\jquery-3.4.1.min.js",
+      "PackagePath": "staticwebassets\\New\\js\\jquery-3.4.1.min.js"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\DatBui.jpg",
+      "PackagePath": "staticwebassets\\img\\DatBui.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\Khiem.jpg",
+      "PackagePath": "staticwebassets\\img\\Khiem.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\Quan.png",
+      "PackagePath": "staticwebassets\\img\\Quan.png"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\TruongHan.jpg",
+      "PackagePath": "staticwebassets\\img\\TruongHan.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\VietHoang.jpg",
+      "PackagePath": "staticwebassets\\img\\VietHoang.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\baigiang1.jpg",
+      "PackagePath": "staticwebassets\\img\\baigiang1.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\baigiang2.jpg",
+      "PackagePath": "staticwebassets\\img\\baigiang2.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\binhluan1.jpg",
+      "PackagePath": "staticwebassets\\img\\binhluan1.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\binhluan2.jpg",
+      "PackagePath": "staticwebassets\\img\\binhluan2.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\binhluan3.jpg",
+      "PackagePath": "staticwebassets\\img\\binhluan3.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\img\\binhluan4.jpg",
+      "PackagePath": "staticwebassets\\img\\binhluan4.jpg"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "D:\\WorkSpace\\html\\CEM\\wwwroot\\js\\Dowload.js",
+      "PackagePath": "staticwebassets\\js\\Dowload.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.CEM.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.CEM.props",
+      "PackagePath": "build\\CEM.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.CEM.props",
+      "PackagePath": "buildMultiTargeting\\CEM.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.CEM.props",
+      "PackagePath": "buildTransitive\\CEM.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

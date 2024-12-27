@@ -1,0 +1,169 @@
+﻿@page "/BaoCao"
+@using CEM.Models
+@using Radzen.Blazor
+@using Radzen
+@inject QlbContext _context
+@inject NotificationService Notification
+@inject MinIOService MinIOService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@inject Radzen.DialogService dialogService
+@inject DataService dataService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+
+<head>
+    <link rel="stylesheet" href="app.css">
+    <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+</head>
+
+<h2>Báo Cáo</h2>
+<div class="container">
+    <div class="form-container">
+        <!-- Mã Báo Cáo -->
+        <div class="form-group">
+            <label>Mã Báo Cáo:</label>
+            <input type="text" class="input-field" @bind="baoCao.MaBaoCao" placeholder=" " />
+        </div>
+
+        <!-- Tiêu Đề -->
+        <div class="form-group">
+            <label>Tiêu Đề:</label>
+            <input type="text" class="input-field" @bind="baoCao.TieuDe" placeholder=" " />
+        </div>
+
+        <!-- Nội Dung -->
+        <div class="form-group">
+            <label>Nội Dung:</label>
+            <textarea class="input-field" @bind="baoCao.NoiDung" style="height:150px" placeholder=" "></textarea>
+        </div>
+
+        <!-- Đường Dẫn Tệp -->
+        <div class="form-group">
+            <label>Đường Dẫn Tệp:</label>
+            <input type="text" class="input-field" @bind="baoCao.DuongDanTep" placeholder=" " />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">File Đính Kèm:</label>
+            <InputFile class="input-field" OnChange="@HandleFileSelected" />
+        </div>
+        
+        <p class="status-message">@statusMessage</p>
+
+        <!-- Nút Lưu -->
+        <div class="form-group text-right">
+            <button class="submit-button" @onclick="Save">Lưu Dữ Liệu</button>
+            <button class="close-button" @onclick="Close" style="margin-top:10px">Đóng</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private BaoCao baoCao = new BaoCao();
+    private MemoryStream memoryStream; // Bộ nhớ tạm
+    private string? fileName;
+    private string? statusMessage;
+    private string MaBaiGiang;
+    private const string SelectedBucket = "baigiang";
+
+    protected override void OnInitialized()
+    {
+       
+
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            try
+            {
+                fileName = file.Name;
+                memoryStream = new MemoryStream();
+                await file.OpenReadStream(10 * 1024 * 1024).CopyToAsync(memoryStream); // Copy dữ liệu vào bộ nhớ tạm
+                memoryStream.Position = 0; // Reset vị trí stream
+                statusMessage = $"Đã chọn file: {fileName}";
+            }
+            catch (Exception ex)
+            {
+                statusMessage = $"Lỗi khi xử lý file: {ex.Message}";
+                Console.WriteLine(statusMessage);
+            }
+        }
+    }
+
+    private async Task Save()
+    {
+        if (memoryStream == null || string.IsNullOrEmpty(fileName))
+        {
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Warning,
+                    Summary = "Cảnh báo",
+                    Detail = "Vui lòng chọn một tệp để tải lên.",
+                    Duration = 4000
+                });
+            return;
+        }
+
+        try
+        {
+            var maNguoiDungString = await _localStorageService.GetItemAsync<string>("maNguoiDung");
+            if (string.IsNullOrEmpty(maNguoiDungString) || !int.TryParse(maNguoiDungString, out int maNguoiDungInt))
+            {
+                throw new Exception("Không tìm thấy hoặc mã người dùng không hợp lệ.");
+            }
+
+            baoCao.MaNguoiDung = maNguoiDungInt;
+           
+
+            // Upload file lên MinIO
+            memoryStream.Position = 0; // Đảm bảo vị trí của stream bắt đầu từ đầu
+            var uploadSuccess = await MinIOService.UploadFileAsync(memoryStream, fileName, SelectedBucket);
+            if (!uploadSuccess)
+            {
+                throw new Exception($"Không thể tải lên tệp {fileName} vào bucket {SelectedBucket}.");
+            }
+
+
+            baoCao.FileName = fileName;
+            baoCao.BucketName = SelectedBucket;
+
+            // Lưu thông tin vào database
+            await _context.BaoCaos.AddAsync(baoCao);
+            await _context.SaveChangesAsync();
+
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Thành công",
+                    Detail = "Phương Tiện Công Cụ đã được lưu.",
+                    Duration = 4000
+                });
+
+            NavigationManager.NavigateTo("/danhsach");
+        }
+        catch (Exception ex)
+        {
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = $"Có lỗi xảy ra: {ex.Message}",
+                    Duration = 4000
+                });
+        }
+        finally
+        {
+            memoryStream?.Dispose();
+            memoryStream = null; // Đặt về null để đảm bảo không tái sử dụng
+        }
+
+    }
+
+    private void Close()
+    {
+        NavigationManager.NavigateTo("/danhsach");
+    }
+}

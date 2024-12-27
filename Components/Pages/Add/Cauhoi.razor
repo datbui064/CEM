@@ -1,0 +1,111 @@
+﻿@page "/CauHoi"
+@using CEM.Models
+@inject QlbContext _context
+@inject NavigationManager NavigationManager
+@inject NotificationService notificationService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+@rendermode InteractiveServer
+
+<head>
+    <link rel="stylesheet" href="app.css">
+    <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+</head>
+
+<h2>Thêm Câu Hỏi</h2>
+<div class="container">
+<div class="form-container">
+
+    <div class="form-group">
+        <label>Mã Bài Giảng:</label>
+        <input type="text" @bind="MaBaiGiang" class="form-control" disabled />
+    </div>
+
+    <!-- Mã Câu Hỏi -->
+    <div class="form-group">
+        <label>Mã Câu Hỏi:</label>
+        <input type="text" @bind="cauHoi.MaCauHoi" class="form-control" />
+    </div>
+
+    <!-- Nội Dung -->
+    <div class="form-group">
+        <label>Nội Dung:</label>
+        <textarea @bind="cauHoi.NoiDung" class="form-control" rows="4"></textarea>
+    </div>
+
+    <!-- Nút Lưu -->
+    <div class="form-group text-right">
+        <button class="submit-button" @onclick="Save">Lưu Dữ Liệu</button>
+        <button class="close-button" @onclick="Cancel">Hủy</button>
+    </div>
+</div>
+</div>
+
+@code {
+    private CauHoi cauHoi = new CauHoi();
+    private string? MaBaiGiang;
+
+    protected override void OnInitialized()
+    {
+        // Lấy tham số MaBaiGiang từ query string
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        MaBaiGiang = queryParams["MaBaiGiang"];
+
+        if (string.IsNullOrEmpty(MaBaiGiang))
+        {
+            NavigationManager.NavigateTo("/danhsach"); // Điều hướng lại nếu không có tham số
+        }
+    }
+
+    private async Task Save()
+    {
+        Console.WriteLine("nut da an");
+        var maNguoiDungString = await _localStorageService.GetItemAsync<string>("maNguoiDung");
+
+        
+
+        // Try parsing MaNguoiDung as an integer
+        if (int.TryParse(maNguoiDungString, out int maNguoiDungInt))
+        {
+            cauHoi.MaNguoiDung = maNguoiDungInt; // Assign to CauHoi
+        }
+        else
+        {
+            throw new Exception("Mã người dùng không hợp lệ.");
+        }
+
+        if (string.IsNullOrEmpty(cauHoi.MaCauHoi) || string.IsNullOrEmpty(cauHoi.NoiDung))
+        {
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = "Vui lòng điền đầy đủ thông tin câu hỏi.",
+                    Duration = 4000
+                });
+            return;
+        }
+
+        // Lưu câu hỏi vào cơ sở dữ liệu
+        cauHoi.MaBaiGiang = MaBaiGiang;
+        _context.CauHois.Add(cauHoi);
+        await _context.SaveChangesAsync();
+
+        notificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Thành công",
+                Detail = "Câu hỏi đã được lưu.",
+                Duration = 4000
+            });
+
+        // Sau khi lưu, chuyển hướng về trang danh sách
+        NavigationManager.NavigateTo("/danhsach");
+    }
+
+    private void Cancel()
+    {
+        // Hủy và chuyển hướng về trang danh sách
+        NavigationManager.NavigateTo("/capnhat");
+    }
+}

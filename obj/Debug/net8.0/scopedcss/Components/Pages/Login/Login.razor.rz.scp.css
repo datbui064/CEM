@@ -1,0 +1,63 @@
+/* login.css */
+
+
+h3[b-9hnlfyg455] {
+    text-align: center;
+    color: #fff; /* Màu chữ trắng */
+}
+
+.EditForm[b-9hnlfyg455] {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Hiệu ứng 3D */
+    background-color: #fff; /* Nền trắng cho form */
+    transition: transform 0.3s; /* Hiệu ứng chuyển động */
+}
+
+    .EditForm:hover[b-9hnlfyg455] {
+        transform: translateY(-5px); /* Nâng form lên khi hover */
+    }
+
+label[b-9hnlfyg455] {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333; /* Màu chữ cho label */
+}
+
+input[b-9hnlfyg455] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Hiệu ứng 3D cho input */
+}
+
+    input:focus[b-9hnlfyg455] {
+        border-color: #6a11cb; /* Màu viền khi focus */
+        box-shadow: 0 0 5px rgba(106, 17, 203, 0.5); /* Hiệu ứng focus */
+    }
+
+button[b-9hnlfyg455] {
+    width: 100%;
+    padding: 10px;
+    background-color: #6a11cb; /* Màu nền button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Hiệu ứng chuyển động cho button */
+}
+
+    button:hover[b-9hnlfyg455] {
+        background-color: #2575fc; /* Màu nền khi hover */
+    }
+
+p[b-9hnlfyg455] {
+    text-align: center;
+    color: red; /* Màu chữ cho thông báo lỗi */
+}

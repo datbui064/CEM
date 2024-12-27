@@ -1,0 +1,155 @@
+﻿@page "/them-quyet-dinh"
+@using CEM.Models
+@inject QlbContext _context
+@inject Radzen.NotificationService notificationService
+@inject Radzen.DialogService dialogService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+
+@code {
+    [Parameter]
+    public QuyetDinh QuyetDinh { get; set; }
+
+    private async Task AddQuyetDinh()
+    {
+        try
+        {
+            var maNguoiDungString = await _localStorageService.GetItemAsync<string>("maNguoiDung");
+
+            if (string.IsNullOrEmpty(maNguoiDungString))
+            {
+                throw new Exception("Không tìm thấy mã người dùng trong localStorage.");
+            }
+
+            if (int.TryParse(maNguoiDungString, out int maNguoiDungInt))
+            {
+                QuyetDinh.MaNguoiDung = maNguoiDungInt;
+            }
+            else
+            {
+                throw new Exception("Mã người dùng không hợp lệ.");
+            }
+
+            _context.QuyetDinhs.Add(QuyetDinh);
+            await _context.SaveChangesAsync();
+
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Thành Công",
+                    Detail = "Quyết định đã được thêm.",
+                    Duration = 4000
+                });
+
+            dialogService.Close();
+        }
+        catch (Exception ex)
+        {
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = $"Không thể thêm quyết định: {ex.Message}",
+                    Duration = 4000
+                });
+        }
+    }
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h3 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ff5733;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin: 0 auto;
+        max-width: 600px;
+    }
+
+    .form-container div {
+        margin-bottom: 15px;
+    }
+
+    label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    textarea:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    textarea {
+        height: 100px;
+        resize: vertical;
+    }
+
+    button {
+        background-color: #28a745;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="form-container">
+    <h3>Thêm Quyết Định</h3>
+    <div>
+        <label>Mã Quyết Định:</label>
+        <input type="text" @bind="QuyetDinh.MaQuyetDinh" />
+    </div>
+    <div>
+        <label>Tiêu Đề:</label>
+        <input type="text" @bind="QuyetDinh.TieuDe" />
+    </div>
+    <div>
+        <label>Mô Tả:</label>
+        <textarea @bind="QuyetDinh.MoTa"></textarea>
+    </div>
+    <div>
+        <label>Ngày Ban Hành:</label>
+        <input type="date" @bind="QuyetDinh.NgayBanHanh" />
+    </div>
+    <div>
+        <label>Người Ký:</label>
+        <input type="text" @bind="QuyetDinh.AiKy" />
+    </div>
+    <button @onclick="AddQuyetDinh">Thêm</button>
+</div>

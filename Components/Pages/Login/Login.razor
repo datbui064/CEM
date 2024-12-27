@@ -1,0 +1,225 @@
+﻿@page "/Account/Login"
+
+@using CEM.Components.Layout
+@using CEM.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen.Blazor
+@using Radzen
+@layout AuthLayout
+@inject NotificationService Notification
+@inject UserService userService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+@using Microsoft.JSInterop
+
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+<style>
+    /* Style cho toàn bộ form đăng nhập */
+    /* Style cho toàn bộ form đăng nhập */
+.login-form {
+    width: 100%;
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+}
+
+
+.login-form h3 {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: #4CAF50; /* Màu xanh lá cây cho tiêu đề */
+}
+
+/* Style cho các nhãn */
+.login-form label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Căn chỉnh các ô nhập */
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+/* Hover và focus effect cho InputText */
+.login-form input[type="text"]:focus,
+.login-form input[type="password"]:focus {
+    border-color: #4CAF50; /* Đổi màu viền khi focus */
+    background-color: #fff;
+    outline: none;
+}
+
+/* Cải thiện khoảng cách giữa các ô nhập */
+.login-form div {
+    margin-bottom: 20px;
+}
+
+/* Style cho ValidationMessage */
+.login-form .ValidationMessage {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+
+/* Style cho nút Submit và Register */
+.login-form button[type="submit"],
+.login-form button[type="button"] {
+    width: 100%;
+    padding: 14px;
+    background-color: #4CAF50; /* Màu nút xanh lá cây */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+}
+
+/* Hover effect cho các nút */
+.login-form button[type="submit"]:hover,
+.login-form button[type="button"]:hover {
+    background-color: #45a049; /* Màu khi hover */
+}
+
+/* Style cho thông báo lỗi */
+.login-form p {
+    text-align: center;
+    font-size: 1rem;
+}
+
+.login-form p[style="color:red;"] {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+/* Style cho trạng thái đang xử lý */
+.login-form p[style="color:#45a049;"] {
+    color: #45a049;
+    font-weight: 600;
+}
+
+
+
+</style>
+<EditForm Model="user" OnValidSubmit="HandleValidSubmit" class="login-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- Thêm thẻ <h3> cho tiêu đề -->
+    <h3>Đăng Nhập</h3>
+
+    <div>
+        <label for="tenDangNhap">Tên Đăng Nhập:</label>
+        <InputText id="tenDangNhap" @bind-Value="user.TenDangNhap" class="form-control" required />
+        <ValidationMessage For="@(() => user.TenDangNhap)" />
+    </div>
+
+    <div>
+        <label for="matKhau">Mật Khẩu:</label>
+        <InputText id="matKhau" type="password" @bind-Value="user.MatKhau" class="form-control" required />
+        <ValidationMessage For="@(() => user.MatKhau)" />
+    </div>
+    @if (loginFailed)
+    {
+        <p style="color:red;">Tên đăng nhập hoặc mật khẩu không đúng!</p>
+    }
+
+    <button type="submit" disabled="@isSubmitting" class="btn-submit">Đăng Nhập</button>
+    <button type="button" @onclick="Register" class="btn-register">Đăng Ký</button>
+
+   
+
+    @if (isSubmitting)
+    {
+        <p>Đang xử lý...</p>
+    }
+</EditForm>
+
+
+@code {
+    private NguoiDung user = new NguoiDung();
+    private bool loginFailed = false;
+    private bool isSubmitting = false;
+
+    private void Register()
+    {
+        NavigationManager.NavigateTo("/Account/Register");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(user.TenDangNhap) || string.IsNullOrWhiteSpace(user.MatKhau))
+            {
+                loginFailed = true;
+                Notification.Notify(NotificationSeverity.Error, "Lỗi", "Tên đăng nhập và mật khẩu không được để trống!");
+                return;
+            }
+
+            var loggedInUser = await userService.LoginAsync(user.TenDangNhap, user.MatKhau);
+
+            if (loggedInUser != null)
+            {
+                var token = loggedInUser.Token;
+                var maNguoiDung = loggedInUser.MaNguoiDung;
+                var hovaten = loggedInUser.HoTen;
+
+                if (AuthStateProvider is CustomAuthenticationStateProvider customAuthProvider)
+                {
+                    await customAuthProvider.MarkUserAsAuthenticated(token);
+                }
+
+                await _localStorageService.SetItemAsync("authToken", token);
+                await _localStorageService.SetItemAsync("maNguoiDung", maNguoiDung);
+                await _localStorageService.SetItemAsync("HoTen", hovaten);
+
+                Notification.Notify(NotificationSeverity.Success, "Đăng nhập thành công", $"Chào mừng {loggedInUser.HoTen} trở lại!");
+                NavigationManager.NavigateTo("/home");
+            }
+            else
+            {
+                loginFailed = true;
+               // Notification.Notify(NotificationSeverity.Error, "Đăng nhập thất bại", "Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra lại!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during login: {ex.Message}, StackTrace: {ex.StackTrace}");
+            Notification.Notify(NotificationSeverity.Error, "Lỗi hệ thống", "Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại sau!");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+
+
+    
+}

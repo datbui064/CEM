@@ -1,0 +1,42 @@
+﻿.form-group {
+    margin-bottom: 1rem;
+}
+
+    .form-group label {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+}
+
+    .form-control:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+button.btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    button.btn:hover {
+        background-color: #0056b3;
+    }
+
+.text-danger {
+    color: #dc3545;
+}

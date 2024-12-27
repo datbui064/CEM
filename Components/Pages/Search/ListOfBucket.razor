@@ -1,0 +1,219 @@
+﻿@page "/files"
+@inject MinIOService MinIOService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<style>
+   
+
+    .header {
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .bucket-select {
+        padding: 10px;
+        margin: 10px 0;
+        border: 2px solid #007bff;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+
+        .bucket-select:hover {
+            border-color: #0056b3;
+        }
+
+    .file-header {
+        color: #007bff;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .file-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .file-item {
+        background: #ffffff;
+        margin: 5px 0;
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: background 0.3s, transform 0.3s;
+    }
+
+        .file-item:hover {
+            background: #e0f7fa;
+            transform: scale(1.02);
+        }
+
+    .no-bucket-message {
+        color: #888;
+        text-align: center;
+    }
+
+    .search-input {
+        padding: 10px;
+        margin: 10px 0;
+        border: 2px solid #007bff;
+        border-radius: 4px;
+        font-size: 16px;
+        width: 100%;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+        .search-input:focus {
+            border-color: #0056b3;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+    .suggestions {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        background: #ffffff;
+        position: absolute;
+        z-index: 1000;
+        width: calc(100% - 22px);
+    }
+
+    .suggestion-item {
+        padding: 10px;
+        cursor: pointer;
+    }
+
+        .suggestion-item:hover {
+            background: #e0f7fa;
+        }
+</style>
+
+<h3 class="header">Chọn Loại Tài Liệu để xem danh sách File</h3>
+
+<select class="bucket-select" @onchange="OnBucketSelected">
+    <option value="">-- Chọn Tài Liệu --</option>
+    @foreach (var bucket in bucketList)
+    {
+        <option value="@bucket">@bucket</option>
+    }
+</select>
+
+@if (isLoading)
+{
+    <div class="loading active"></div>
+}
+else if (!string.IsNullOrEmpty(selectedBucket))
+{
+    <h4 class="file-header">Danh sách File Loại : @selectedBucket</h4>
+
+    <div style="position: relative;">
+        <input type="text" class="search-input" placeholder="Tìm kiếm file..." @oninput="OnSearchInput" @onfocus="ShowSuggestions" />
+
+        @if (suggestions.Any())
+        {
+            <ul class="suggestions">
+                @foreach (var suggestion in suggestions)
+                {
+                    <li class="suggestion-item" @onclick="() => SelectSuggestion(suggestion)">@suggestion</li>
+                }
+            </ul>
+        }
+    </div>
+
+    <ul class="file-list">
+        @foreach (var file in filteredFileList)
+        {
+            <li class="file-item">
+                <a href="javascript:void(0);" @onclick="() => NavigateToFileDetail(file)">@file</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p class="no-bucket-message">Vui lòng chọn một loại tài liệu.</p>
+}
+
+@code {
+    private List<string> bucketList = new List<string>();
+    private List<string> fileList = new List<string>();
+    private List<string> filteredFileList = new List<string>();
+    private List<string> suggestions = new List<string>();
+    private string selectedBucket;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBuckets();
+    }
+
+    private async Task LoadBuckets()
+    {
+        isLoading = true;
+        await Task.Delay(2000);
+        bucketList = await MinIOService.ListBucketsAsync();
+        fileList = await MinIOService.ListFilesInBucketAsync(selectedBucket);
+        isLoading = false;
+    }
+
+    private async Task OnBucketSelected(ChangeEventArgs e)
+    {
+        selectedBucket = e.Value.ToString();
+        if (!string.IsNullOrEmpty(selectedBucket))
+        {
+            isLoading = true;
+            filteredFileList.Clear();
+            suggestions.Clear();
+
+            fileList = await MinIOService.ListFilesInBucketAsync(selectedBucket);
+            filteredFileList = fileList;
+
+            isLoading = false;
+        }
+        else
+        {
+            fileList.Clear();
+            filteredFileList.Clear();
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        var searchTerm = e.Value.ToString().ToLower();
+        filteredFileList = fileList.Where(file => file.ToLower().Contains(searchTerm)).ToList();
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            suggestions = fileList.Where(file => file.ToLower().Contains(searchTerm)).Distinct().ToList();
+        }
+        else
+        {
+            suggestions.Clear();
+        }
+    }
+
+    private void ShowSuggestions()
+    {
+        if (filteredFileList.Count > 0)
+        {
+            suggestions = fileList.Where(file => file.ToLower().Contains(string.Empty)).Distinct().ToList();
+        }
+    }
+
+    private void SelectSuggestion(string suggestion)
+    {
+        filteredFileList = fileList.Where(file => file.ToLower().Contains(suggestion.ToLower())).ToList();
+        suggestions.Clear();
+    }
+
+    private void NavigateToFileDetail(string fileName)
+    {
+        NavigationManager.NavigateTo($"/FileDetail?fileName={fileName}&bucketName={selectedBucket}");
+    }
+}

@@ -1,0 +1,322 @@
+﻿@page "/danh-sach-bao-cao"
+@using CEM.Models
+@using Microsoft.EntityFrameworkCore
+@inject QlbContext _context
+@inject NavigationManager NavigationManager
+@inject Radzen.NotificationService notificationService
+@inject Radzen.DialogService dialogService
+@using Radzen
+@inject MinIOService MinIOService
+
+@rendermode InteractiveServer
+
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+<style>
+    /* Cấu hình chung */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        color: #333;
+    }
+
+    h3 {
+        color: #0056b3;
+        text-align: center;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    /* Nút thêm báo cáo */
+    .btn-add {
+        display: block;
+        margin: 20px auto;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        text-transform: uppercase;
+    }
+
+    .btn-add:hover {
+        background-color: #218838;
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Bảng hiển thị */
+    .decision-table {
+        width: 90%;
+        margin: 0 auto;
+        border-collapse: collapse;
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+
+    .decision-table th, .decision-table td {
+        border: 1px solid #ddd;
+        padding: 16px 20px;
+        text-align: left;
+        font-size: 16px;
+        line-height: 1.5;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .decision-table th {
+        background-color: #007bff;
+        color: #fff;
+        font-weight: 600;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .decision-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .decision-table tr:hover {
+        background-color: #e9ecef;
+        cursor: pointer;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Nút hành động */
+    .action-button {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 10px 16px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-edit {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        margin-right: 5px;
+    }
+
+    .btn-edit:hover {
+        background-color: #0056b3;
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        margin-right: 5px;
+    }
+
+    .btn-delete:hover {
+        background-color: #c82333;
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Responsive */
+    media (max-width: 768px) {
+        .decision-table {
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            width: 90%;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .decision-table th, .decision-table td {
+            padding: 10px;
+        }
+    }
+</style>
+
+<h3 class="page-title">Danh Sách Báo Cáo</h3>
+
+<div class="button-container mb-3">
+    <button class="action-button btn-add" @onclick="AddBaoCao">Thêm Báo Cáo</button>
+</div>
+
+<table class="decision-table">
+    <thead>
+        <tr>
+            <th>Mã Báo Cáo</th>
+            <th>Tiêu Đề</th>
+            <th>Nội Dung</th>
+            
+            <th>Hành Động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var baoCao in baoCaos)
+        {
+            <tr>
+                <td>@baoCao.MaBaoCao</td>
+                <td>@baoCao.TieuDe</td>
+                <td>@baoCao.NoiDung</td>
+                
+                <td>
+                    <button class="action-button btn-info" @onclick="@(async () => await HienThiChiTiet(baoCao.MaBaoCao))">Chi Tiết</button>
+                    <button class="action-button btn-edit" @onclick="@(async () => await EditBaoCao(baoCao.MaBaoCao))">Sửa</button>
+                    <button class="action-button btn-delete" @onclick="() => DeleteBaoCao(baoCao.MaBaoCao)">Xóa</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<BaoCao> baoCaos = new List<BaoCao>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            baoCaos = await _context.BaoCaos.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            notificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Lỗi",
+                Detail = $"Không thể tải danh sách báo cáo: {ex.Message}",
+                Duration = 4000
+            });
+        }
+    }
+
+    private async Task HienThiChiTiet(string maBaoCao)
+    {
+        try
+        {
+            Console.WriteLine($"Đang mở chi tiết cho báo cáo: {maBaoCao}");
+
+            var baocao = await _context.BaoCaos.FirstOrDefaultAsync(q => q.MaBaoCao == maBaoCao);
+            if (baocao == null)
+            {
+                notificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Summary = "Lỗi",
+                        Detail = "Không tìm thấy báo cáo.",
+                        Duration = 3000
+                    });
+                return;
+            }
+
+            await dialogService.OpenAsync<ChiTietBaoCao>(
+                "Thông Tin Quyết Định",
+                new Dictionary<string, object> { { "BaoCao", baocao } },
+                new DialogOptions { Width = "700px", Height = "500px" }
+            );
+        }
+        catch (Exception ex)
+        {
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = $"Có lỗi xảy ra: {ex.Message}",
+                    Duration = 4000
+                });
+
+            Console.WriteLine($"Lỗi khi hiển thị chi tiết: {ex}");
+        }
+    }
+
+
+    private async Task DeleteBaoCao(string maBaoCao)
+    {
+        var confirmDelete = await dialogService.Confirm("Bạn có chắc chắn muốn xóa báo cáo này?", "Xác Nhận Xóa", new ConfirmOptions { Width = "400px", Height = "200px" });
+
+        if (confirmDelete == true)
+        {
+            try
+            {
+                var baoCaoToDelete = await _context.BaoCaos.FirstOrDefaultAsync(bc => bc.MaBaoCao == maBaoCao);
+                if (baoCaoToDelete != null)
+                {
+                    // Xóa tệp trên MinIO
+                   
+
+                    // Xóa báo cáo trong cơ sở dữ liệu
+                    _context.BaoCaos.Remove(baoCaoToDelete);
+                    await _context.SaveChangesAsync();
+
+                    notificationService.Notify(new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Success,
+                            Summary = "Thành Công",
+                            Detail = "Báo cáo đã được xóa.",
+                            Duration = 4000
+                        });
+
+                    await LoadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                notificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Summary = "Lỗi",
+                        Detail = $"Không thể xóa báo cáo: {ex.Message}",
+                        Duration = 4000
+                    });
+            }
+        }
+    }
+
+
+    private async Task AddBaoCao()
+    {
+        var newBaoCao = new BaoCao(); // Tạo một đối tượng mới
+        await dialogService.OpenAsync<ThemBaoCao>(
+            "Thêm Báo Cáo",
+            new Dictionary<string, object> { { "baoCao", newBaoCao } },
+            new DialogOptions { Width = "700px", Height = "500px" }
+        );
+
+        // Tải lại dữ liệu sau khi thêm
+        await LoadData();
+    }
+
+    private async Task EditBaoCao(string maBaoCao)
+    {
+        var baoCao = await _context.BaoCaos.FirstOrDefaultAsync(bc => bc.MaBaoCao == maBaoCao);
+        if (baoCao != null)
+        {
+            await dialogService.OpenAsync<EditBaoCao>(
+                "",
+                new Dictionary<string, object> { { "BaoCao", baoCao } },
+                new DialogOptions { Width = "700px", Height = "500px" }
+            );
+
+            // Tải lại dữ liệu sau khi sửa
+            await LoadData();
+        }
+    }
+}

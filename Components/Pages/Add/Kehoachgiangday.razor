@@ -1,0 +1,112 @@
+﻿@page "/KeHoachGiangDay"
+@using CEM.Models
+@inject QlbContext _context
+@inject NotificationService Notification
+@inject MinIOService MinIOService
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+@rendermode InteractiveServer
+<head>
+    <link rel="stylesheet" href="app.css">
+    <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+</head>
+
+<h2>Kế Hoạch Giảng Dạy</h2>
+<div class="container">
+    <div class="form-container">
+        <div class="form-group">
+            <label>Mã Bài Giảng:</label>
+            <input type="text" @bind="MaBaiGiang" class="form-control" disabled />
+        </div>
+
+        <!-- Mã Kế Hoạch -->
+        <div class="form-group">
+            <label>Mã Kế Hoạch:</label>
+            <input type="text" @bind="keHoachGiangDay.MaKeHoach" class="form-control" />
+        </div>
+
+        <!-- Tiêu Đề -->
+        <div class="form-group">
+            <label>Tiêu Đề:</label>
+            <input type="text" @bind="keHoachGiangDay.TieuDe" class="form-control" />
+        </div>
+
+        <!-- Loại Kế Hoạch -->
+        <div class="form-group">
+            <label>Loại Kế Hoạch:</label>
+            <input type="text" @bind="keHoachGiangDay.LoaiKeHoach" class="form-control" />
+        </div>
+
+        <!-- Chi Tiết -->
+        <div class="form-group">
+            <label>Chi Tiết:</label>
+            <textarea @bind="keHoachGiangDay.ChiTiet" class="form-control" rows="4"></textarea>
+        </div>
+
+        <!-- Nút Lưu -->
+        <div class="form-group text-right">
+            <button class="submit-button" @onclick="Save">Lưu Dữ Liệu</button>
+            <button class="close-button" @onclick="Cancel">Đóng</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private KeHoachGiangDay keHoachGiangDay = new KeHoachGiangDay();
+    private string? MaBaiGiang;
+
+    protected override void OnInitialized()
+    {
+        // Lấy tham số MaBaiGiang từ query string
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        MaBaiGiang = queryParams["MaBaiGiang"];
+
+        if (string.IsNullOrEmpty(MaBaiGiang))
+        {
+            NavigationManager.NavigateTo("/danhsach"); // Điều hướng lại nếu không có tham số
+        }
+    }
+
+    private async Task Save()
+    {
+        var maNguoiDungString = await _localStorageService.GetItemAsync<string>("maNguoiDung");
+
+        if (string.IsNullOrEmpty(maNguoiDungString))
+        {
+            throw new Exception("Không tìm thấy mã người dùng trong localStorage.");
+        }
+
+        // Try parsing MaNguoiDung as an integer
+        if (int.TryParse(maNguoiDungString, out int maNguoiDungInt))
+        {
+            keHoachGiangDay.MaNguoiDung = maNguoiDungInt; // Assign to BaiGiang
+        }
+        else
+        {
+            throw new Exception("Mã người dùng không hợp lệ.");
+        }
+
+        // Lưu kế hoạch vào cơ sở dữ liệu
+        keHoachGiangDay.MaBaiGiang = MaBaiGiang;
+        await _context.KeHoachGiangDays.AddAsync(keHoachGiangDay);
+        await _context.SaveChangesAsync();
+
+        Notification.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Thành công",
+                Detail = "Kế hoạch đã được lưu.",
+                Duration = 4000
+            });
+
+        // Sau khi lưu, chuyển hướng về trang danh sách
+        NavigationManager.NavigateTo("/danhsach");
+    }
+
+    private void Cancel()
+    {
+        // Hủy và chuyển hướng về trang danh sách
+        NavigationManager.NavigateTo("/danhsach");
+    }
+}

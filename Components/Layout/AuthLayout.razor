@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+<link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+<div class="auth-container">
+    <div class="auth-card">
+        @Body
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5f5f5;
+    }
+
+    .auth-card {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
+    }
+
+   
+</style>

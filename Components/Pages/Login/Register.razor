@@ -1,0 +1,208 @@
+﻿@page "/Account/Register"
+
+@using CEM.Components.Layout
+@using CEM.Models
+@using Radzen.Blazor
+@using Radzen
+@inject NotificationService Notification
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@layout AuthLayout
+<style>
+    /* Style cho toàn bộ form đăng ký */
+    .register-form {
+        width: 100%;
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        font-family: 'Arial', sans-serif;
+    }
+
+        .register-form h3 {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #4CAF50; /* Màu xanh lá cây cho tiêu đề */
+        }
+
+        /* Style cho các nhãn */
+        .register-form label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+    .register-form h3 {
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #4CAF50; /* Màu xanh lá cây cho tiêu đề */
+    }
+
+        /* Căn chỉnh các ô nhập */
+        .register-form input[type="text"],
+        .register-form input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+
+            /* Hover và focus effect cho InputText */
+            .register-form input[type="text"]:focus,
+            .register-form input[type="password"]:focus {
+                border-color: #4CAF50; /* Đổi màu viền khi focus */
+                background-color: #fff;
+                outline: none;
+            }
+
+        /* Cải thiện khoảng cách giữa các ô nhập */
+        .register-form div {
+            margin-bottom: 20px;
+        }
+
+        /* Style cho ValidationMessage */
+        .register-form .ValidationMessage {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        /* Style cho nút Submit */
+        .register-form button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background-color: #4CAF50; /* Màu nút xanh lá cây */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+        }
+
+            /* Hover effect cho nút */
+            .register-form button[type="submit"]:hover {
+                background-color: #45a049; /* Màu khi hover */
+            }
+
+        /* Style cho thông báo lỗi */
+        .register-form p {
+            text-align: center;
+            font-size: 1rem;
+        }
+
+            .register-form p[style="color:red;"] {
+                color: #e74c3c;
+                font-weight: 600;
+            }
+
+            /* Style cho trạng thái đang xử lý */
+            .register-form p[style="color:#45a049;"] {
+                color: #45a049;
+                font-weight: 600;
+            }
+
+</style>
+
+
+<EditForm Model="newUser" OnValidSubmit="HandleValidSubmit" class="register-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <h3>Đăng Ký</h3>
+    <div class="form-group">
+        <label for="tenDangNhap">Tên Đăng Nhập:</label>
+        <InputText id="tenDangNhap" @bind-Value="newUser.TenDangNhap" required class="form-control" />
+        <ValidationMessage For="@(() => newUser.TenDangNhap)" />
+    </div>
+
+    <div class="form-group">
+        <label for="matKhau">Mật Khẩu:</label>
+        <InputText id="matKhau" type="password" @bind-Value="newUser.MatKhau" required class="form-control" />
+        <ValidationMessage For="@(() => newUser.MatKhau)" />
+    </div>
+
+    <div class="form-group">
+        <label for="hoTen">Họ Tên:</label>
+        <InputText id="hoTen" @bind-Value="newUser.HoTen" required class="form-control" />
+        <ValidationMessage For="@(() => newUser.HoTen)" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <InputText id="email" @bind-Value="newUser.Email" required class="form-control" />
+        <ValidationMessage For="@(() => newUser.Email)" />
+    </div>
+
+    <div class="form-group">
+        <label for="soDienThoai">Số Điện Thoại:</label>
+        <InputText id="soDienThoai" @bind-Value="newUser.SoDienThoai" class="form-control" />
+        <ValidationMessage For="@(() => newUser.SoDienThoai)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Đăng Ký</button>
+
+    @if (registrationFailed)
+    {
+        <p class="text-danger">@errorMessage</p>
+    }
+</EditForm>
+
+@code {
+    private NguoiDung newUser = new NguoiDung();
+    private bool registrationFailed = false;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            // Kiểm tra thông tin đầu vào hợp lệ
+            if (string.IsNullOrWhiteSpace(newUser.TenDangNhap) || string.IsNullOrWhiteSpace(newUser.MatKhau))
+            {
+                registrationFailed = true;
+                errorMessage = "Thông tin không hợp lệ!";
+                Notification.Notify(NotificationSeverity.Error, "Đăng ký thất bại", errorMessage);
+                return;
+            }
+
+            var success = await UserService.RegisterAsync(newUser);
+            if (success)
+            {
+                // Đăng ký thành công
+                Notification.Notify(NotificationSeverity.Success, "Đăng ký thành công", "Bạn có thể đăng nhập ngay bây giờ!");
+                NavigationManager.NavigateTo("/Account/Login");
+            }
+            else
+            {
+                // Đăng ký thất bại
+                registrationFailed = true;
+                errorMessage = "Tên đăng nhập đã tồn tại!";
+                Notification.Notify(NotificationSeverity.Error, "Đăng ký thất bại", errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log lỗi và thông báo
+            Console.WriteLine($"Error during registration: {ex.Message}");
+            registrationFailed = true;
+            errorMessage = "Có lỗi xảy ra trong quá trình đăng ký!";
+            Notification.Notify(NotificationSeverity.Error, "Lỗi hệ thống", errorMessage);
+        }
+    }
+}

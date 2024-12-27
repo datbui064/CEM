@@ -1,0 +1,359 @@
+﻿@using CEM.Models
+@using Radzen
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject HttpClient Http
+@inject MinIOService MinIOService
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    /* Cải thiện kiểu bảng */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .table th, .table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+    /* Nút xóa */
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+    /* Thông báo */
+    .notification {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .notification-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    
+
+    /* Định dạng tiêu đề */
+    /* Định dạng tiêu đề */
+    h3, h4 {
+        color: #343a40; /* Màu chữ tối */
+        font-family: 'Arial', sans-serif; /* Phông chữ */
+        font-weight: bold; /* Đậm */
+    }
+
+    /* Định dạng đoạn văn */
+    p {
+        font-size: 16px; /* Kích thước chữ */
+        color: #6c757d; /* Màu chữ xám */
+        line-height: 1.5; /* Khoảng cách giữa các dòng */
+    }
+
+    /* Định dạng nút */
+    .btn {
+        font-size: 14px; /* Kích thước chữ */
+        color: white; /* Màu chữ trắng */
+    }
+
+    /* Định dạng thông báo */
+    .notification {
+        font-size: 16px; /* Kích thước chữ */
+        color: #155724; /* Màu chữ xanh cho thông báo thành công */
+    }
+
+    .notification-error {
+        color: #721c24; /* Màu chữ đỏ cho thông báo lỗi */
+    }
+
+    /* Định dạng liên kết */
+    a {
+        color: #007bff; /* Màu xanh cho liên kết */
+        text-decoration: none; /* Bỏ gạch chân */
+    }
+
+        a:hover {
+            text-decoration: underline; /* Gạch chân khi di chuột */
+        }
+
+</style>
+<h3>Thông Tin Bài Giảng</h3>
+<p><strong>Mã Bài Giảng:</strong> @BaiGiang.MaBaiGiang</p>
+<p><strong>Tiêu Đề:</strong> @BaiGiang.TieuDe</p>
+<p><strong>Nội Dung:</strong> @BaiGiang.NoiDung</p>
+<p><strong>Đường Dẫn Tệp:</strong> @BaiGiang.DuongDanTep</p>
+<p>
+    <a href="/FileDetail?fileName=@Uri.EscapeDataString(BaiGiang.FileName)&bucketName=@Uri.EscapeDataString(BaiGiang.BucketName)"> @BaiGiang.FileName</a><i class="fas fa-file-download"></i>
+</p>
+
+<h4>Danh Sách Câu Hỏi</h4>
+@if (CauHoiList?.Any() == true)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã Câu Hỏi</th>
+                <th>Loại Câu Hỏi</th>
+                <th>Nội Dung</th>
+                <th>Đáp Án</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cauHoi in CauHoiList)
+            {
+                <tr>
+                    <td>@cauHoi.MaCauHoi</td>
+                    <td>@cauHoi.LoaiCauHoi</td>
+                    <td>@cauHoi.NoiDung</td>
+                    <td>@cauHoi.DapAn</td>
+                    <td>
+
+                        <button class="btn btn-danger" @onclick="() => DeleteCauHoi(cauHoi.MaCauHoi)"> <i class="fas fa-trash"></i>Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Không có câu hỏi liên quan.</p>
+}
+
+<h4>Danh Sách Đề Cương</h4>
+@if (decuongList?.Any() == true)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã Đề Cương</th>
+                <th>Tiêu Đề</th>
+                <th>File</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var decuong in decuongList)
+            {
+                <tr>
+                    <td>@decuong.MaDeCuong</td>
+                    <td>@decuong.TieuDe</td>
+                    <td>
+                        <a href="/FileDetail?fileName=@Uri.EscapeDataString(decuong.FileName)&bucketName=@Uri.EscapeDataString(decuong.BucketName)">
+                            <i class="fas fa-file-download"></i>
+                            @decuong.FileName
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteDeCuong(decuong.MaDeCuong)"> <i class="fas fa-trash"></i>Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Không có đề cương liên quan.</p>
+}
+
+<h4>Danh Sách Kế Hoạch Giảng Dạy</h4>
+@if (kehoachList?.Any() == true)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã Kế Hoạch</th>
+                <th>Tiêu Đề</th>
+                <th>Loại Kế Hoạch</th>
+                <th>Chi Tiết</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var kehoach in kehoachList)
+            {
+                <tr>
+                    <td>@kehoach.MaKeHoach</td>
+                    <td>@kehoach.TieuDe</td>
+                    <td>@kehoach.LoaiKeHoach</td>
+                    <td>@kehoach.ChiTiet</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteKeHoach(kehoach.MaKeHoach)"> <i class="fas fa-trash"></i>Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Không có kế hoạch giảng dạy liên quan.</p>
+}
+
+<h4>Danh Sách Phương Tiện Công Cụ</h4>
+@if (phuongtienList?.Any() == true)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã Công Cụ</th>
+                <th>Tên Công Cụ</th>
+                <th>Mô Tả</th>
+                <th>Loại Công Cụ</th>
+                <th>File</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var phuongtien in phuongtienList)
+            {
+                <tr>
+                    <td>@phuongtien.MaCongCu</td>
+                    <td>@phuongtien.TenCongCu</td>
+                    <td>@phuongtien.MoTa</td>
+                    <td>@phuongtien.LoaiCongCu</td>
+                    <td>
+                        <a href="/FileDetail?fileName=@Uri.EscapeDataString(phuongtien.FileName)&bucketName=@Uri.EscapeDataString(phuongtien.BucketName)">
+                            <i class="fas fa-file-download"></i>
+                            @phuongtien.FileName
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeletePhuongTien(phuongtien.MaCongCu)"> <i class="fas fa-trash"></i>Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Không có phương tiện công cụ liên quan.</p>
+}
+
+<h4>Danh Sách Tài Liệu Học Tập</h4>
+@if (tailieuList?.Any() == true)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã Tài Liệu</th>
+                <th>Tên Tài Liệu</th>
+                <th>Tác Giả</th>
+                <th>Năm Xuất Bản</th>
+                <th>Loại Tài Liệu</th>
+                <th>File</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tailieu in tailieuList)
+            {
+                <tr>
+                    <td>@tailieu.MaTaiLieu</td>
+                    <td>@tailieu.TenTaiLieu</td>
+                    <td>@tailieu.TacGia</td>
+                    <td>@tailieu.NamXuatBan</td>
+                    <td>@tailieu.LoaiTaiLieu</td>
+                    <td>
+                        <a href="/FileDetail?fileName=@Uri.EscapeDataString(tailieu.FileName)&bucketName=@Uri.EscapeDataString(tailieu.BucketName)">
+                            <i class="fas fa-file-download"></i>
+                            @tailieu.FileName
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteTaiLieu(tailieu.MaTaiLieu)"> <i class="fas fa-trash"></i>Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Không có tài liệu học tập liên quan.</p>
+}
+
+@code {
+    [Parameter] public BaiGiang BaiGiang { get; set; } = new BaiGiang();
+    [Parameter] public List<CauHoi> CauHoiList { get; set; } = new List<CauHoi>();
+    [Parameter] public List<DeCuong> decuongList { get; set; } = new List<DeCuong>();
+    [Parameter] public List<KeHoachGiangDay> kehoachList { get; set; } = new List<KeHoachGiangDay>();
+    [Parameter] public List<PhuongTienCongCu> phuongtienList { get; set; } = new List<PhuongTienCongCu>();
+    [Parameter] public List<TaiLieuHocTap> tailieuList { get; set; } = new List<TaiLieuHocTap>();
+
+    private async Task DeleteCauHoi(string maCauHoi)
+    {
+        var confirmed = await DialogService.Confirm("Bạn có chắc muốn xóa câu hỏi này?", "Xác nhận xóa");
+        if (confirmed == true)
+        {
+            // Thực hiện gọi API hoặc service để xóa
+            CauHoiList.RemoveAll(x => x.MaCauHoi == maCauHoi);
+            NotificationService.Notify(NotificationSeverity.Success, "Thành công", "Xóa câu hỏi thành công!");
+        }
+    }
+
+    private async Task DeleteDeCuong(string maDeCuong)
+    {
+        var confirmed = await DialogService.Confirm("Bạn có chắc muốn xóa đề cương này?", "Xác nhận xóa");
+        if (confirmed == true)
+        {
+            decuongList.RemoveAll(x => x.MaDeCuong == maDeCuong);
+            NotificationService.Notify(NotificationSeverity.Success, "Thành công", "Xóa đề cương thành công!");
+        }
+    }
+
+    private async Task DeleteKeHoach(string maKeHoach)
+    {
+        var confirmed = await DialogService.Confirm("Bạn có chắc muốn xóa kế hoạch này?", "Xác nhận xóa");
+        if (confirmed == true)
+        {
+            kehoachList.RemoveAll(x => x.MaKeHoach == maKeHoach);
+            NotificationService.Notify(NotificationSeverity.Success, "Thành công", "Xóa kế hoạch thành công!");
+        }
+    }
+
+    private async Task DeletePhuongTien(string maCongCu)
+    {
+        var confirmed = await DialogService.Confirm("Bạn có chắc muốn xóa phương tiện này?", "Xác nhận xóa");
+        if (confirmed == true)
+        {
+            phuongtienList.RemoveAll(x => x.MaCongCu == maCongCu);
+            NotificationService.Notify(NotificationSeverity.Success, "Thành công", "Xóa phương tiện thành công!");
+        }
+    }
+
+    private async Task DeleteTaiLieu(string maTaiLieu)
+    {
+        var confirmed = await DialogService.Confirm("Bạn có chắc muốn xóa tài liệu này?", "Xác nhận xóa");
+        if (confirmed == true)
+        {
+            tailieuList.RemoveAll(x => x.MaTaiLieu == maTaiLieu);
+            NotificationService.Notify(NotificationSeverity.Success, "Thành công", "Xóa tài liệu thành công!");
+        }
+    }
+
+    
+
+}

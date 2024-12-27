@@ -1,0 +1,53 @@
+﻿@using CEM.Models
+@code {
+    [Parameter]
+    public QuyetDinh QuyetDinh { get; set; }
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h3 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ff5733;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .info-container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin: 0 auto;
+        max-width: 600px;
+    }
+
+    .info-container p {
+        font-size: 16px;
+        line-height: 1.5;
+        margin: 10px 0;
+    }
+
+    .info-container strong {
+        color: #007bff;
+    }
+</style>
+
+<div class="info-container">
+    <h3>Thông Tin Quyết Định</h3>
+    <p><strong>Mã Quyết Định:</strong> @QuyetDinh.MaQuyetDinh</p>
+    <p><strong>Tiêu Đề:</strong> @QuyetDinh.TieuDe</p>
+    <p><strong>Mô Tả:</strong> @QuyetDinh.MoTa</p>
+    <p><strong>Ngày Ban Hành:</strong> @(QuyetDinh.NgayBanHanh?.ToShortDateString() ?? "N/A")</p>
+    <p><strong>Người Ký:</strong> @QuyetDinh.AiKy</p>
+    <p>
+        <a href="/FileDetail?fileName=@Uri.EscapeDataString(QuyetDinh.FileName)&bucketName=@Uri.EscapeDataString(QuyetDinh.BucketName)"> @QuyetDinh.FileName</a><i class="fas fa-file-download"></i>
+    </p>
+</div>

@@ -1,0 +1,754 @@
+﻿@page "/danhsach"
+@using CEM.Components.Pages
+@using CEM.Models
+@using Microsoft.EntityFrameworkCore
+@inject QlbContext _context
+@inject NavigationManager NavigationManager
+@inject Radzen.NotificationService notificationService
+@inject Radzen.DialogService dialogService
+@using Radzen
+@rendermode InteractiveServer
+<head>
+   
+</head>
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+
+<style>
+     /* Cấu hình chung */
+
+     h3 {
+         padding: 10px;
+         margin-top: 10px;
+     }
+     /* Tiêu đề trang */
+     .page-title {
+         font-size: 28px;
+         font-weight: bold;
+         color: #ff5733; /* Màu sắc nổi bật */
+         margin-bottom: 20px;
+         text-align: center;
+         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+     }
+
+     /* Container tìm kiếm */
+     .search-container {
+         border: 1px solid #ddd;
+         border-radius: 8px;
+         background-color: #ffffff;
+         padding: 20px;
+         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+     }
+
+     /* Input tìm kiếm */
+     .search-input {
+         border: 1px solid #3498db;
+         border-radius: 4px;
+         padding: 10px;
+         width: calc(100% - 22px);
+         transition: border-color 0.3s;
+     }
+
+         .search-input:focus {
+             border-color: #2980b9;
+             outline: none;
+         }
+
+     /* Container nút */
+     .button-container {
+         display: flex;
+         justify-content: space-between;
+         margin-top: 15px;
+         
+     }
+
+     /* Nút tìm kiếm và xóa */
+     .search-button, .clear-button {
+         flex: 1;
+         padding: 10px 15px;
+         border: none;
+         border-radius: 4px;
+         color: #ffffff;
+         cursor: pointer;
+         transition: background-color 0.3s, transform 0.3s; /* Thêm hiệu ứng chuyển động */
+     }
+
+     .search-button {
+         background: linear-gradient(90deg, #3498db, #2980b9); /* Gradient cho nút tìm kiếm */
+        margin-left: 10px;
+     }
+
+         .search-button:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+         }
+
+     .clear-button {
+         background: linear-gradient(90deg, #e74c3c, #c0392b); /* Gradient cho nút xóa */
+         margin-left: 10px;
+     }
+
+         .clear-button:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+         }
+
+     /* Bảng dữ liệu */
+     .custom-table {
+         margin-top: 20px;
+         width: 100%;
+         border-collapse: collapse;
+         background: linear-gradient(180deg, #ffffff, #f9f9f9);
+         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+         border-radius: 8px;
+         overflow: hidden;
+         transform: translateZ(0); /* Tạo hiệu ứng 3D */
+     }
+
+         .custom-table th, .custom-table td {
+             padding: 12px;
+             text-align: left;
+             border-bottom: 1px solid #ddd;
+             transition: background-color 0.3s;
+         }
+
+         .custom-table th {
+             background-color: #3498db;
+             color: #ffffff;
+             font-weight: bold;
+             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+         }
+
+         .custom-table tr:hover {
+             background-color: rgba(52, 152, 219, 0.1); /* Màu nền nhẹ khi hover */
+             transform: scale(1.02); /* Tăng kích thước nhẹ khi hover */
+         }
+
+     .action-button {
+         padding: 6px 10px;
+         border: none;
+         border-radius: 4px;
+         color: #ffffff;
+         cursor: pointer;
+         transition: background-color 0.3s, transform 0.3s; /* Thêm hiệu ứng chuyển động */
+     }
+
+         .action-button.btn-info {
+             background-color: #3498db;
+         }
+
+             .action-button.btn-info:hover {
+                 background-color: #2980b9;
+                 transform: translateY(-2px);
+                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+             }
+
+         .action-button.btn-danger {
+             background-color: #e74c3c;
+         }
+
+             .action-button.btn-danger:hover {
+                 background-color: #c0392b;
+                 transform: translateY(-2px);
+                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+             }
+
+     .btn-add {
+         display: block;
+         margin: 20px auto;
+         background-color: #28a745;
+         color: #fff;
+         border: none;
+         padding: 12px 24px;
+         border-radius: 8px;
+         font-size: 18px;
+         font-weight: 600;
+         cursor: pointer;
+         transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+         text-transform: uppercase;
+     }
+
+         .btn-add:hover {
+             background-color: #218838;
+             transform: translateY(-4px) scale(1.05);
+             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+         }
+
+     /* Bảng cập nhật */
+     .capnhat-table {
+         width: 90%;
+         margin: 0 auto;
+         border-collapse: collapse;
+         background-color: #fff;
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+         margin-bottom: 20px;
+         border-radius: 8px;
+         font-family: 'Roboto', sans-serif;
+     }
+
+         .capnhat-table th, .capnhat-table td {
+             border: 1px solid #ddd;
+             padding: 16px 20px;
+             text-align: left;
+             font-size: 16px;
+             line-height: 1.5;
+             transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+         }
+
+         .capnhat-table th {
+             background-color: #007bff;
+             color: #fff;
+             font-weight: 600;
+             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+         }
+
+         .capnhat-table tr:nth-child(even) {
+             background-color: #f2f2f2;
+         }
+
+         .capnhat-table tr:hover {
+             background-color: #e9ecef;
+             cursor: pointer;
+             transform: translateY(-2px);
+             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+         }
+
+    
+</style>
+
+<div class="button-container">
+   
+    <button class="btn-add" @onclick="XemDanhSachQuyetDinh">Xem Danh Sách Quyết Định</button>
+    <button class="btn-add" @onclick="XemDanhSachBaoCao">Xem Danh Sách Báo Cáo</button>
+</div>
+
+<h3 class="page-title">Danh Sách Bài Giảng</h3>
+
+<div class="search-container mb-3">
+    <!-- Lọc theo từ khóa -->
+    <div class="form-group">
+        <label for="searchKeyword">Tìm kiếm theo từ khóa:</label>
+        <input type="text" id="searchKeyword" class="form-control search-input" @bind="searchKeyword" placeholder="Nhập từ khóa..." />
+    </div>
+
+    <!-- Lọc theo mã bài giảng -->
+    <div class="form-group">
+        <label for="searchMaBaiGiang">Tìm kiếm theo mã bài giảng:</label>
+        <input type="text" id="searchMaBaiGiang" class="form-control search-input" @bind="searchMaBaiGiang" placeholder="Nhập mã bài giảng..." />
+    </div>
+
+    <!-- Lọc theo mã người dùng -->
+    <div class="form-group">
+        <label for="searchMaNguoiDung">Tìm kiếm theo mã người dùng:</label>
+        <input type="text" id="searchMaNguoiDung" class="form-control search-input" @bind="searchMaNguoiDung" placeholder="Nhập mã người dùng..." />
+    </div>
+
+    <div class="form-group">
+        <label for="searchNguoiLap">Tìm kiếm theo người lập bài giảng:</label>
+        <input type="text" id="searchNguoiLap" class="form-control search-input" @bind="searchNguoiLap" placeholder="Nhập tên người lập..." />
+    </div>
+    <div class="form-group">
+        <label for="sortBy">Sắp xếp theo:</label>
+        <select id="sortBy" class="form-control" @bind="sortBy">
+            <option value="TieuDe">Tiêu Đề</option>
+            <option value="MaBaiGiang">Mã Bài Giảng</option>
+            <option value="MaNguoiDung">Mã Người Dùng</option>
+            <option value="NguoiLapBaiGiang">Người Lập</option>
+        </select>
+    </div>
+
+    <div class="button-container">
+        <button class="btn btn-primary search-button" @onclick="RefreshData">Tìm Kiếm</button>
+        <button class="btn btn-secondary clear-button" @onclick="ClearFilters">Xóa Bộ Lọc</button>
+        <button class="btn btn-primary search-button" @onclick="SortData">Sắp Xếp</button>
+    </div>
+    
+</div>
+
+<table class="capnhat-table">
+    <thead>
+        <tr>
+            <th>Mã Bài Giảng</th>
+            <th>Tiêu Đề</th>
+            <th>Mã Người Dùng</th>
+            <th>Người Lập</th>
+            <th>Hành Động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var baiGiang in filteredBaiGiangs)
+        {
+            <tr>
+                <td>@baiGiang.MaBaiGiang</td>
+                <td>@baiGiang.TieuDe</td>
+                <td>@baiGiang.MaNguoiDung</td>
+                <td>@baiGiang.NguoiLapBaiGiang</td>
+                <td>
+                    <button class="action-button btn-info" @onclick="@(async () => await HienThiModal(baiGiang.MaBaiGiang))">Thông Tin Chi Tiết</button>
+                    <button class="action-button btn-danger" @onclick="() => DeleteBaiGiang(baiGiang.MaBaiGiang)">Xóa</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<h3 class="page-title" >Bảng Thống Kê </h3>
+<style>
+    /* Bảng thống kê */
+    .statistics-table {
+        width: 90%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background: linear-gradient(180deg, #ffffff, #f3f3f3);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        overflow: hidden;
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+    }
+
+        .statistics-table th, .statistics-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .statistics-table th {
+            background-color: #007bff;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .statistics-table td {
+            text-align: center;
+        }
+
+        .statistics-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .statistics-table tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            transform: scale(1.01);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+        }
+
+</style>
+
+
+<table class="statistics-table">
+    <thead>
+        <tr>
+            <th>Tài Liệu</th>
+            <th>Số Lượng</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var stat in baiGiangCounts)
+        {
+            <tr>
+                <td>@stat.Category</td>
+                <td>@stat.Count</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        
+    }
+
+    .chart-container {
+        width: 100%;
+        max-width: 20000px; /* Chiều rộng biểu đồ dài hơn */
+        margin: 0 auto;
+        border-radius: 10px;
+        overflow: hidden;
+        perspective: 1000px; /* Tạo hiệu ứng 3D */
+    }
+
+    .chart-inner {
+        transform-style: preserve-3d;
+        transition: transform 0.5s; /* Hiệu ứng chuyển động */
+    }
+
+    .chart-container:hover .chart-inner {
+        transform: scale(1.05); /* Hiệu ứng zoom khi hover */
+    }
+
+    .chart {
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        background: #fff;
+        border-radius: 10px;
+        transition: background-color 0.3s; /* Hiệu ứng đổi màu */
+    }
+
+    .chart-container:hover .chart {
+        background-color: #e0f7fa; /* Màu nền khi hover */
+    }
+
+    /* Định dạng chữ trong biểu đồ */
+    .radzen-column-series text {
+        fill: #ffffff; /* Màu chữ */
+        font-weight: bold; /* Chữ đậm */
+    }
+
+    /* Định dạng màu cho các cột */
+    .radzen-column-series rect:nth-child(1) {
+        fill: #ff6384; /* Màu cho cột đầu tiên */
+    }
+
+    .radzen-column-series rect:nth-child(2) {
+        fill: #36a2eb; /* Màu cho cột thứ hai */
+    }
+
+    .radzen-column-series rect:nth-child(3) {
+        fill: #ffce56; /* Màu cho cột thứ ba */
+    }
+
+    .radzen-column-series rect:nth-child(4) {
+        fill: #4bc0c0; /* Màu cho cột thứ tư */
+    }
+
+    .radzen-column-series rect:nth-child(5) {
+        fill: #9966ff; /* Màu cho cột thứ năm */
+    }
+
+    .radzen-column-series rect {
+        transition: width 0.3s; /* Hiệu ứng chuyển đổi cho cột */
+        width: 40px; /* Độ rộng cột nhỏ hơn */
+    }
+</style>
+<h3 class="page-title">Biểu Đồ Thống Kê</h3>
+
+<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
+    <!-- Biểu đồ cột -->
+    <div class="chart-container">
+        <div class="chart-inner">
+            <div class="chart">
+                <RadzenChart @ref="chart" Width="50%" Height="400px">
+                    <RadzenColumnSeries Data="@baiGiangCounts" CategoryProperty="Category" ValueProperty="Count" />
+                </RadzenChart>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+@code {
+    private RadzenDataGrid<BaiGiang> dataGrid;
+    private List<BaiGiang> filteredBaiGiangs = new List<BaiGiang>();
+
+    // Biến tìm kiếm
+    private string searchKeyword = string.Empty;
+    private string searchMaBaiGiang = string.Empty;
+    private string searchMaNguoiDung = string.Empty;
+    private string searchNguoiLap = string.Empty;
+
+    private string sortBy = "TieuDe";
+
+    private RadzenChart chart;
+    private List<Statistics> baiGiangCounts = new List<Statistics>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        await LoadChart();
+    }
+    private async Task LoadChart()
+    {
+        baiGiangCounts = await GetStatistics();
+    }
+
+    private async Task<List<Statistics>> GetStatistics()
+    {
+        var baiGiangCount = await _context.BaiGiangs.CountAsync();
+        var baoCaoCount = await _context.BaoCaos.CountAsync(); // Giả sử bạn có bảng BaoCaos
+        var quyetDinhCount = await _context.QuyetDinhs.CountAsync(); // Giả sử bạn có bảng QuyetDinhs
+
+        var cauHoiCount = await _context.CauHois.CountAsync();
+        var deCuongCount = await _context.DeCuongs.CountAsync(); 
+        var keHoachGiangDayCount = await _context.KeHoachGiangDays.CountAsync(); 
+        var phuongTienCongCuCount = await _context.PhuongTienCongCus.CountAsync(); 
+        var taiLieuHocTapCount = await _context.TaiLieuHocTaps.CountAsync();
+        return new List<Statistics>
+    {
+        new Statistics { Category = "Bài Giảng", Count = baiGiangCount },
+        new Statistics { Category = "Báo Cáo", Count = baoCaoCount },
+        new Statistics { Category = "Quyết Định", Count = quyetDinhCount },
+         new Statistics { Category = "Câu Hỏi", Count = cauHoiCount },
+          new Statistics { Category = "Đề Cương", Count = deCuongCount },
+           new Statistics { Category = "Kế Hoạch Giảng Dạy", Count = keHoachGiangDayCount },
+            new Statistics { Category = "Phương Tiện Công Cụ", Count = phuongTienCongCuCount },
+             new Statistics { Category = "Tài Liệu Học Tập", Count = taiLieuHocTapCount }
+    };
+    }
+
+
+
+    public class Statistics
+    {
+        public string Category { get; set; }
+        public int Count { get; set; }
+    }
+
+
+
+    private async Task RefreshData()
+    {
+        await LoadData(new LoadDataArgs());
+    }
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        try
+        {
+            var query = _context.BaiGiangs.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                query = query.Where(bg => bg.TieuDe.Contains(searchKeyword));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchMaBaiGiang))
+            {
+                query = query.Where(bg => bg.MaBaiGiang.Contains(searchMaBaiGiang));
+            }
+
+            if (int.TryParse(searchMaNguoiDung, out int maNguoiDung))
+            {
+                query = query.Where(bg => bg.MaNguoiDung == maNguoiDung);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchNguoiLap))
+            {
+                query = query.Where(bg => bg.NguoiLapBaiGiang.Contains(searchNguoiLap));
+            }
+
+            filteredBaiGiangs = await query.ToListAsync();
+
+            if (!filteredBaiGiangs.Any())
+            {
+                notificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Summary = "Kết Quả",
+                        Detail = "Không tìm thấy bài giảng nào phù hợp.",
+                        Duration = 3000
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = $"Không thể tải danh sách bài giảng: {ex.Message}",
+                    Duration = 4000
+                });
+        }
+    }
+
+    private void ClearFilters()
+    {
+        searchKeyword = string.Empty;
+        searchMaBaiGiang = string.Empty;
+        searchMaNguoiDung = string.Empty;
+        searchNguoiLap = string.Empty;
+        RefreshData();
+    }
+
+    private async Task HienThiModal(string maBaiGiang)
+    {
+        var baiGiang = await _context.BaiGiangs
+            .Include(bg => bg.CauHois) // Bao gồm câu hỏi
+            .Include(bg => bg.TaiLieuHocTaps)
+            .Include(bg => bg.DeCuongs)
+            .Include(bg => bg.KeHoachGiangDays)
+            .Include(bg => bg.PhuongTienCongCus)// Bao gồm tài liệu
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(bg => bg.MaBaiGiang == maBaiGiang);
+
+        if (baiGiang == null)
+        {
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = "Không tìm thấy bài giảng.",
+                    Duration = 3000
+                });
+            return;
+        }
+
+        await dialogService.OpenAsync<ThongTin>(
+            "Thông Tin Bài Giảng",
+            new Dictionary<string, object>
+                {
+            { "BaiGiang", baiGiang },
+            { "CauHoiList", baiGiang.CauHois }, // Truyền danh sách câu hỏi
+            { "decuongList", baiGiang.DeCuongs },
+            { "kehoachList", baiGiang.KeHoachGiangDays } ,
+            { "phuongtienList", baiGiang.PhuongTienCongCus } ,
+            { "tailieuList", baiGiang.TaiLieuHocTaps } // Truyền danh sách tài liệu
+                },
+            new DialogOptions { Width = "700px", Height = "500px" }
+        );
+    }
+
+
+    private async Task DeleteBaiGiang(string maBaiGiang)
+    {
+        var confirmDelete = await dialogService.Confirm("Bạn có chắc chắn muốn xóa bài giảng và tất cả tài liệu liên quan?", "Xác Nhận Xóa", new ConfirmOptions { Width = "400px", Height = "200px" });
+
+        if (confirmDelete == true)
+        {
+            try
+            {
+                // Tìm bài giảng cần xóa
+                var baiGiangToDelete = await _context.BaiGiangs
+                    .Include(bg => bg.CauHois) // Giả sử có quan hệ với CauHois
+                    .Include(bg => bg.DeCuongs) 
+                    .Include(bg => bg.KeHoachGiangDays)
+                    .Include(bg => bg.PhuongTienCongCus)
+                    .Include(bg => bg.TaiLieuHocTaps)// Giả sử có quan hệ với TaiLieux
+                    .FirstOrDefaultAsync(bg => bg.MaBaiGiang == maBaiGiang);
+
+                if (baiGiangToDelete != null)
+                {
+                    // Xóa tất cả câu hỏi liên quan
+                    _context.CauHois.RemoveRange(baiGiangToDelete.CauHois);
+
+                    // Xóa tất cả tài liệu liên quan
+                    _context.DeCuongs.RemoveRange(baiGiangToDelete.DeCuongs);
+                     _context.KeHoachGiangDays.RemoveRange(baiGiangToDelete.KeHoachGiangDays);
+                      _context.PhuongTienCongCus.RemoveRange(baiGiangToDelete.PhuongTienCongCus);
+                    _context.TaiLieuHocTaps.RemoveRange(baiGiangToDelete.TaiLieuHocTaps);
+
+                    // Xóa bài giảng
+                    _context.BaiGiangs.Remove(baiGiangToDelete);
+
+                    // Lưu thay đổi vào cơ sở dữ liệu
+                    await _context.SaveChangesAsync();
+
+                    // Thông báo thành công
+                    notificationService.Notify(new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Success,
+                            Summary = "Thành Công",
+                            Detail = "Bài giảng đã được xóa.",
+                            Duration = 4000
+                        });
+
+                    await RefreshData();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Thông báo lỗi
+                notificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Summary = "Lỗi",
+                        Detail = $"Không thể xóa bài giảng: {ex.Message}",
+                        Duration = 4000
+                    });
+            }
+        }
+    }
+
+    private async Task XemDanhSachQuyetDinh()
+    {
+        // Chuyển hướng đến trang danh sách quyết định
+        NavigationManager.NavigateTo("/danh-sach-quyet-dinh");
+    }
+
+    private async Task XemDanhSachBaoCao()
+    {
+        // Chuyển hướng đến trang danh sách báo cáo
+        NavigationManager.NavigateTo("/danh-sach-bao-cao");
+    }
+
+  
+
+    private async Task SortData()
+    {
+        try
+        {
+            var query = _context.BaiGiangs.AsQueryable();
+
+            // Các điều kiện tìm kiếm như trước
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                query = query.Where(bg => bg.TieuDe.Contains(searchKeyword));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchMaBaiGiang))
+            {
+                query = query.Where(bg => bg.MaBaiGiang.Contains(searchMaBaiGiang));
+            }
+
+            if (int.TryParse(searchMaNguoiDung, out int maNguoiDung))
+            {
+                query = query.Where(bg => bg.MaNguoiDung == maNguoiDung);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchNguoiLap))
+            {
+                query = query.Where(bg => bg.NguoiLapBaiGiang.Contains(searchNguoiLap));
+            }
+
+            // Thêm tính năng sắp xếp
+            query = sortBy switch
+            {
+                "TieuDe" => query.OrderBy(bg => bg.TieuDe),
+                "MaBaiGiang" => query.OrderBy(bg => bg.MaBaiGiang),
+                "MaNguoiDung" => query.OrderBy(bg => bg.MaNguoiDung),
+                "NguoiLapBaiGiang" => query.OrderBy(bg => bg.NguoiLapBaiGiang),
+                _ => query
+            };
+
+            filteredBaiGiangs = await query.ToListAsync();
+
+            if (!filteredBaiGiangs.Any())
+            {
+                notificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Summary = "Kết Quả",
+                        Detail = "Không tìm thấy bài giảng nào phù hợp.",
+                        Duration = 3000
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            notificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = $"Không thể tải danh sách bài giảng: {ex.Message}",
+                    Duration = 4000
+                });
+        }
+    }
+
+
+}

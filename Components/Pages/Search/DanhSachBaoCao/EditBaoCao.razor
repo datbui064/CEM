@@ -1,0 +1,70 @@
+﻿@page "/edit-bao-cao"
+@using CEM.Models
+@inject QlbContext _context
+@inject Radzen.NotificationService notificationService
+@inject Radzen.DialogService dialogService
+
+<EditForm Model="@baoCao" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="maBaoCao">Mã Báo Cáo:</label>
+        <InputText id="maBaoCao" @bind-Value="baoCao.MaBaoCao" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="tieuDe">Tiêu Đề:</label>
+        <InputText id="tieuDe" @bind-Value="baoCao.TieuDe" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="noiDung">Nội Dung:</label>
+        <InputTextArea id="noiDung" @bind-Value="baoCao.NoiDung" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="duongDanTep">Đường Dẫn Tệp:</label>
+        <InputText id="duongDanTep" @bind-Value="baoCao.DuongDanTep" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="maNguoiDung">Mã Người Dùng:</label>
+        <InputNumber id="maNguoiDung" @bind-Value="baoCao.MaNguoiDung" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <button type="button" class="btn btn-secondary" @onclick="Close">Hủy</button>
+</EditForm>
+
+@code {
+    [Parameter] public BaoCao baoCao { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        if (string.IsNullOrEmpty(baoCao.MaBaoCao))
+        {
+            _context.BaoCaos.Add(baoCao);
+        }
+        else
+        {
+            _context.BaoCaos.Update(baoCao);
+        }
+
+        await _context.SaveChangesAsync();
+        notificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Thành Công",
+                Detail = "Báo cáo đã được lưu.",
+                Duration = 4000
+            });
+
+        dialogService.Close(true);
+    }
+
+    private void Close()
+    {
+        dialogService.Close(false);
+    }
+}

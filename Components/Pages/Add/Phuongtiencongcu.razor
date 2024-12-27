@@ -1,0 +1,163 @@
+﻿@page "/PhuongTienCongCu"
+@using CEM.Models
+@inject QlbContext _context
+@inject NotificationService Notification
+@inject MinIOService MinIOService
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+@rendermode InteractiveServer
+<link rel="stylesheet" href="app.css">
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+<h2>Phương Tiện Công Cụ</h2>
+<div class="container">
+    <div class="form-container">
+        <div class="form-group">
+            <label>Mã Bài Giảng:</label>
+            <input type="text" @bind="MaBaiGiang" class="form-control" disabled />
+        </div>
+
+        <!-- Mã Công Cụ -->
+        <div class="form-group">
+            <label>Mã Công Cụ:</label>
+            <input type="text" @bind="phuongTienCongCu.MaCongCu" class="form-control" />
+        </div>
+
+        <!-- Tên Công Cụ -->
+        <div class="form-group">
+            <label>Tên Công Cụ:</label>
+            <input type="text" @bind="phuongTienCongCu.TenCongCu" class="form-control" />
+        </div>
+
+        <!-- Mô Tả -->
+        <div class="form-group">
+            <label>Mô Tả:</label>
+            <textarea @bind="phuongTienCongCu.MoTa" class="form-control" rows="4"></textarea>
+        </div>
+
+        <!-- File Đính Kèm -->
+        <div class="form-group">
+            <label>File Đính Kèm:</label>
+            <InputFile OnChange="@HandleFileSelected" />
+        </div>
+
+        <p class="status-message">@statusMessage</p>
+
+        <div class="form-group text-right">
+            <button class="submit-button" @onclick="Save">Lưu Dữ Liệu</button>
+            <button class="close-button" @onclick="Close">Đóng</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private PhuongTienCongCu phuongTienCongCu = new PhuongTienCongCu();
+    private MemoryStream memoryStream; // Bộ nhớ tạm
+    private string? fileName;
+    private string? statusMessage;
+    private string MaBaiGiang;
+    private const string SelectedBucket = "phuongtiencongcu";
+
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        MaBaiGiang = queryParams["MaBaiGiang"];
+
+        if (string.IsNullOrEmpty(MaBaiGiang))
+        {
+            NavigationManager.NavigateTo("/danhsach");
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            try
+            {
+                fileName = file.Name;
+                memoryStream = new MemoryStream();
+                await file.OpenReadStream(10 * 1024 * 1024).CopyToAsync(memoryStream); // Copy dữ liệu vào bộ nhớ tạm
+                memoryStream.Position = 0; // Reset vị trí stream
+                statusMessage = $"Đã chọn file: {fileName}";
+            }
+            catch (Exception ex)
+            {
+                statusMessage = $"Lỗi khi xử lý file: {ex.Message}";
+                Console.WriteLine(statusMessage);
+            }
+        }
+    }
+
+    private async Task Save()
+    {
+        if (memoryStream == null || string.IsNullOrEmpty(fileName))
+        {
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Warning,
+                    Summary = "Cảnh báo",
+                    Detail = "Vui lòng chọn một tệp để tải lên.",
+                    Duration = 4000
+                });
+            return;
+        }
+
+        try
+        {
+            var maNguoiDungString = await _localStorageService.GetItemAsync<string>("maNguoiDung");
+            if (string.IsNullOrEmpty(maNguoiDungString) || !int.TryParse(maNguoiDungString, out int maNguoiDungInt))
+            {
+                throw new Exception("Không tìm thấy hoặc mã người dùng không hợp lệ.");
+            }
+
+            phuongTienCongCu.MaNguoiDung = maNguoiDungInt;
+            phuongTienCongCu.MaBaiGiang = MaBaiGiang;
+
+            // Upload file lên MinIO
+            memoryStream.Position = 0; // Đảm bảo vị trí của stream bắt đầu từ đầu
+            var uploadSuccess = await MinIOService.UploadFileAsync(memoryStream, fileName, SelectedBucket);
+
+            if (!uploadSuccess)
+            {
+                throw new Exception("Upload file thất bại.");
+            }
+
+            phuongTienCongCu.DuongDanTep = fileName;
+
+            // Lưu thông tin vào database
+            await _context.PhuongTienCongCus.AddAsync(phuongTienCongCu);
+            await _context.SaveChangesAsync();
+
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Thành công",
+                    Detail = "Phương Tiện Công Cụ đã được lưu.",
+                    Duration = 4000
+                });
+
+            NavigationManager.NavigateTo("/danhsach");
+        }
+        catch (Exception ex)
+        {
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = $"Có lỗi xảy ra: {ex.Message}",
+                    Duration = 4000
+                });
+        }
+        finally
+        {
+            memoryStream?.Dispose(); // Giải phóng tài nguyên
+        }
+    }
+
+    private void Close()
+    {
+        NavigationManager.NavigateTo("/danhsach");
+    }
+}
