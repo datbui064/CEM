@@ -9,6 +9,7 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @layout AuthLayout
+
 <style>
     /* Style cho toàn bộ form đăng ký */
     .register-form {
@@ -119,7 +120,6 @@
             }
 
 </style>
-
 
 <EditForm Model="newUser" OnValidSubmit="HandleValidSubmit" class="register-form">
     <DataAnnotationsValidator />

@@ -1,0 +1,84 @@
+﻿@page "/Account/ForgotPassword"
+
+@using CEM.Components.Layout
+@using CEM.Models
+@using Radzen.Blazor
+@using Radzen
+@layout AuthLayout
+@inject NotificationService Notification
+@inject UserService userService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+
+<RadzenNotification /> 
+
+<h3>Đặt Lại Mật Khẩu</h3>
+
+<EditForm Model="resetPasswordModel" OnValidSubmit="HandleValidSubmit" class="reset-password-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="email">Nhập địa chỉ email của bạn:</label>
+        <InputText id="email" @bind-Value="resetPasswordModel.Email" required />
+        <ValidationMessage For="@(() => resetPasswordModel.Email)" />
+    </div>
+
+    <div>
+        <label for="newPassword">Mật khẩu mới:</label>
+        <InputText id="newPassword" type="password" @bind-Value="resetPasswordModel.NewPassword" required />
+        <ValidationMessage For="@(() => resetPasswordModel.NewPassword)" />
+    </div>
+
+    <div>
+        <label for="confirmPassword">Xác nhận mật khẩu:</label>
+        <InputText id="confirmPassword" type="password" @bind-Value="resetPasswordModel.ConfirmPassword" required />
+        <ValidationMessage For="@(() => resetPasswordModel.ConfirmPassword)" />
+    </div>
+
+    <button type="submit">Đặt lại mật khẩu</button>
+</EditForm>
+
+@code {
+    private ResetPasswordModel resetPasswordModel = new ResetPasswordModel();
+
+    private async Task HandleValidSubmit()
+    {
+        // Gọi dịch vụ để cập nhật mật khẩu
+        var result = await userService.UpdatePasswordAsync(resetPasswordModel.Email, resetPasswordModel.NewPassword);
+
+        if (result)
+        {
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Thành công",
+                    Detail = "Mật khẩu đã được thay đổi thành công.",
+                    Duration = 4000 // Thời gian hiển thị thông báo (ms)
+                });
+
+            // Chờ một chút trước khi chuyển hướng
+            await Task.Delay(4000); // Chờ thông báo hiển thị
+            NavigationManager.NavigateTo("/Account/Login", true);
+        }
+        else
+        {
+            Notification.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Lỗi",
+                    Detail = "Email không tồn tại hoặc có lỗi xảy ra.",
+                    Duration = 4000
+                });
+        }
+    }
+
+    public class ResetPasswordModel
+    {
+        public string Email { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+}

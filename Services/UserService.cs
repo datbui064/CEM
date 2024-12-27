@@ -75,4 +75,25 @@ public class UserService
         var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
+
+
+    // Các phương thức khác...
+
+    public async Task<bool> UpdatePasswordAsync(string email, string newPassword)
+    {
+        // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
+        var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+        {
+            return false; // Email không tồn tại
+        }
+
+        // Cập nhật mật khẩu (bạn nên mã hóa mật khẩu trước khi lưu)
+        user.MatKhau = HashPassword(newPassword); // Giả sử bạn có phương thức này
+        await _context.SaveChangesAsync();
+
+        return true; // Cập nhật thành công
+    }
+
+   
 }
